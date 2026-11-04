@@ -1,68 +1,32 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A simple, beautiful weekly timetable.">
-  <title>My Timetable</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Exam schedule, countdown timer, study analytics and past-paper tasks.">
+  <title>Exam Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">Weekly planner</p>
-        <h1>My timetable</h1>
-        <p class="subtitle">Plan your week with clarity.</p>
-      </div>
-      <button class="button primary" id="addButton" type="button">＋ Add class</button>
-    </header>
+    <header class="topbar"><div><p class="eyebrow">Study command centre</p><h1>Exam planner</h1><p class="subtitle">Your schedule, focus time, and progress in one place.</p></div><button class="button primary" id="focusButton">＋ Start focus</button></header>
 
-    <section class="toolbar" aria-label="Timetable controls">
-      <div class="week-control">
-        <button class="icon-button" id="previousWeek" type="button" aria-label="Previous week">←</button>
-        <strong id="weekLabel">This week</strong>
-        <button class="icon-button" id="nextWeek" type="button" aria-label="Next week">→</button>
-      </div>
-      <div class="toolbar-actions">
-        <button class="button subtle" id="todayButton" type="button">Today</button>
-        <button class="button subtle" id="clearButton" type="button">Clear all</button>
-      </div>
+    <section class="hero-grid">
+      <article class="countdown-card"><div><p class="eyebrow light">Next exam</p><h2 id="nextExamName">Numerical Analysis II</h2><p id="nextExamMeta">MAT 3222 · 09 Nov 2026 · 1:00 PM</p></div><div class="countdown" id="countdown">00<span>d</span> 00<span>h</span> 00<span>m</span></div></article>
+      <article class="timer-card"><div class="timer-head"><div><p class="eyebrow">Focus timer</p><h2 id="timerDisplay">00:00:00</h2></div><span class="timer-status" id="timerStatus">Ready</span></div><div class="timer-progress"><span id="timerProgress"></span></div><div class="timer-actions"><button class="button primary" id="timerToggle">Start timer</button><button class="button subtle" id="timerReset">Reset</button><select id="timerPreset" aria-label="Timer duration"><option value="25">25 min</option><option value="50">50 min</option><option value="90">90 min</option></select></div></article>
     </section>
 
-    <section class="stats" aria-label="Weekly summary">
-      <div class="stat-card"><span class="stat-icon blue">◷</span><div><strong id="classCount">0</strong><span>classes</span></div></div>
-      <div class="stat-card"><span class="stat-icon purple">⌁</span><div><strong id="hourCount">0h</strong><span>scheduled</span></div></div>
-      <div class="stat-card"><span class="stat-icon orange">✦</span><div><strong id="nextClass">—</strong><span>next up</span></div></div>
-    </section>
+    <section class="stats"><div class="stat-card"><span class="stat-icon blue">◷</span><div><strong id="hoursStat">0h</strong><span>studied this week</span></div></div><div class="stat-card"><span class="stat-icon purple">✓</span><div><strong id="papersStat">0</strong><span>papers completed</span></div></div><div class="stat-card"><span class="stat-icon orange">↗</span><div><strong id="streakStat">0 days</strong><span>current streak</span></div></div><div class="stat-card"><span class="stat-icon green">▣</span><div><strong id="tasksStat">0%</strong><span>task completion</span></div></div></section>
 
-    <section class="timetable-wrap">
-      <div class="timetable" id="timetable" aria-live="polite"></div>
-      <div class="empty-state" id="emptyState" hidden>
-        <div class="empty-icon">✦</div>
-        <h2>Your week is clear</h2>
-        <p>Add your first class to get started.</p>
-        <button class="button primary" type="button" id="emptyAddButton">Add a class</button>
-      </div>
-    </section>
-
-    <footer><span>Saved automatically in this browser</span><span class="dot">•</span><span>Made for focused weeks</span></footer>
+    <div class="content-grid">
+      <section class="panel schedule-panel"><div class="panel-heading"><div><p class="eyebrow">Important dates</p><h2>Exam schedule</h2></div><button class="text-button" id="sortSchedule">Sort by date ↕</button></div><div class="schedule-table"><div class="table-row table-head"><span>Date & day</span><span>Time</span><span>Subject code</span><span>Subject title</span></div><div id="scheduleRows"></div></div></section>
+      <aside class="side-column">
+        <section class="panel analytics-panel"><div class="panel-heading"><div><p class="eyebrow">This week</p><h2>Analytics</h2></div></div><div class="chart" id="chart"></div><div class="legend"><span><i class="blue-dot"></i>Study hours</span><strong id="weeklyHours">0 / 20h</strong></div></section>
+        <section class="panel tasks-panel"><div class="panel-heading"><div><p class="eyebrow">Preparation</p><h2>Past papers & tasks</h2></div><button class="text-button" id="addTask">＋ Add</button></div><form class="task-form" id="taskForm"><input id="taskInput" placeholder="e.g. MAT 3222 · 2025 paper" maxlength="80" required><button aria-label="Add task">→</button></form><div class="task-list" id="taskList"></div></section>
+      </aside>
+    </div>
+    <footer><span>Saved automatically in this browser</span><span class="dot">•</span><span>Keep going, one focused hour at a time</span></footer>
   </main>
-
-  <dialog id="classDialog">
-    <form method="dialog" id="classForm">
-      <div class="dialog-header"><div><p class="eyebrow">Schedule</p><h2 id="dialogTitle">Add a class</h2></div><button class="close-button" value="cancel" aria-label="Close">×</button></div>
-      <input type="hidden" id="entryId">
-      <label>Class name<input id="name" required maxlength="60" placeholder="e.g. Mathematics"></label>
-      <div class="form-grid"><label>Day<select id="day"><option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option></select></label><label>Color<select id="color"><option value="blue">Ocean</option><option value="purple">Grape</option><option value="orange">Mango</option><option value="green">Mint</option><option value="pink">Berry</option></select></label></div>
-      <div class="form-grid"><label>Start time<input id="start" type="time" required></label><label>End time<input id="end" type="time" required></label></div>
-      <label>Location or notes<input id="location" maxlength="80" placeholder="e.g. Room 204"></label>
-      <div class="dialog-actions"><button class="button subtle" value="cancel">Cancel</button><button class="button primary" id="saveButton" value="default">Save class</button></div>
-    </form>
-  </dialog>
   <script src="script.js"></script>
 </body>
 </html>

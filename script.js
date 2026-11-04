@@ -1,40 +1,27 @@
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const STORAGE_KEY = 'timetable-entries-v1';
-const initialEntries = [
-  { id: crypto.randomUUID(), name: 'Mathematics', day: 'Monday', start: '09:00', end: '10:00', location: 'Room 204', color: 'blue' },
-  { id: crypto.randomUUID(), name: 'Design studio', day: 'Tuesday', start: '11:00', end: '12:30', location: 'Creative lab', color: 'purple' },
-  { id: crypto.randomUUID(), name: 'Computer science', day: 'Wednesday', start: '09:30', end: '11:00', location: 'Lab 3', color: 'green' },
-  { id: crypto.randomUUID(), name: 'Physics', day: 'Thursday', start: '14:00', end: '15:00', location: 'Room 108', color: 'orange' },
-  { id: crypto.randomUUID(), name: 'Study group', day: 'Friday', start: '10:00', end: '11:00', location: 'Library', color: 'pink' }
+const exams=[
+ {date:'2026-11-09',time:'13:00',code:'MAT 3222',title:'Numerical Analysis II'},
+ {date:'2026-11-14',time:'09:00',code:'COM 3401',title:'Data Communication and Networking'},
+ {date:'2026-11-25',time:'13:00',code:'IDC 3203',title:'Human Resource Management'},
+ {date:'2026-12-01',time:'13:00',code:'COM 3306',title:'Operating Systems'},
+ {date:'2026-12-03',time:'09:00',code:'COM 3307',title:'Embedded Systems'},
+ {date:'2026-12-12',time:'13:00',code:'IDC 3212',title:'Operations and Total Quality Management'}
 ];
-let entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || initialEntries;
-let weekOffset = 0;
-const $ = (id) => document.getElementById(id);
-const dialog = $('classDialog');
-
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
-function dayDate(dayIndex) { const date = new Date(); date.setHours(0,0,0,0); date.setDate(date.getDate() - ((date.getDay() + 6) % 7) + dayIndex + weekOffset * 7); return date; }
-function formatTime(time) { return new Date(`1970-01-01T${time}`).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }); }
-function render() {
-  const timetable = $('timetable');
-  timetable.innerHTML = DAYS.map((day, index) => {
-    const date = dayDate(index); const today = weekOffset === 0 && date.toDateString() === new Date().toDateString();
-    const dayEntries = entries.filter((entry) => entry.day === day).sort((a,b) => a.start.localeCompare(b.start));
-    return `<section class="day-column"><header class="day-head ${today ? 'today' : ''}"><div class="name">${day.slice(0,3)}</div><div class="date">${date.getDate()}</div></header><div class="day-items">${dayEntries.length ? dayEntries.map(card).join('') : '<div class="empty-day">—</div>'}</div></section>`;
-  }).join('');
-  $('emptyState').hidden = entries.length > 0; timetable.hidden = entries.length === 0;
-  const start = dayDate(0); const end = dayDate(6); const sameMonth = start.getMonth() === end.getMonth();
-  $('weekLabel').textContent = weekOffset === 0 ? 'This week' : `${start.toLocaleDateString([], {month:'short',day:'numeric'})} – ${end.toLocaleDateString([], {month:sameMonth ? undefined : 'short',day:'numeric'})}`;
-  $('classCount').textContent = entries.length; $('hourCount').textContent = `${Math.round(entries.reduce((sum,e) => sum + (minutes(e.end)-minutes(e.start)),0)/60 * 10)/10}h`;
-  const next = entries.slice().sort((a,b) => a.start.localeCompare(b.start))[0]; $('nextClass').textContent = next ? next.name : '—';
-}
-function card(entry) { return `<article class="class-card ${entry.color}" data-id="${entry.id}" tabindex="0"><div class="class-name">${escapeHtml(entry.name)}</div><div class="class-time">${formatTime(entry.start)} – ${formatTime(entry.end)}</div>${entry.location ? `<div class="class-location">${escapeHtml(entry.location)}</div>` : ''}</article>`; }
-function minutes(value) { const [hours, mins] = value.split(':').map(Number); return hours * 60 + mins; }
-function escapeHtml(value) { return value.replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char])); }
-function openDialog(entry) { $('entryId').value = entry?.id || ''; $('dialogTitle').textContent = entry ? 'Edit class' : 'Add a class'; $('name').value = entry?.name || ''; $('day').value = entry?.day || 'Monday'; $('start').value = entry?.start || '09:00'; $('end').value = entry?.end || '10:00'; $('location').value = entry?.location || ''; $('color').value = entry?.color || 'blue'; dialog.showModal(); }
-$('addButton').addEventListener('click', () => openDialog()); $('emptyAddButton').addEventListener('click', () => openDialog());
-$('previousWeek').addEventListener('click', () => { weekOffset--; render(); }); $('nextWeek').addEventListener('click', () => { weekOffset++; render(); }); $('todayButton').addEventListener('click', () => { weekOffset = 0; render(); });
-$('clearButton').addEventListener('click', () => { if (entries.length && confirm('Clear every class from your timetable?')) { entries = []; save(); render(); } });
-$('timetable').addEventListener('click', (event) => { const cardElement = event.target.closest('.class-card'); if (cardElement) openDialog(entries.find((entry) => entry.id === cardElement.dataset.id)); });
-$('classForm').addEventListener('submit', (event) => { event.preventDefault(); const entry = { id: $('entryId').value || crypto.randomUUID(), name: $('name').value.trim(), day: $('day').value, start: $('start').value, end: $('end').value, location: $('location').value.trim(), color: $('color').value }; if (minutes(entry.end) <= minutes(entry.start)) { alert('End time must be after start time.'); return; } const index = entries.findIndex((item) => item.id === entry.id); if (index >= 0) entries[index] = entry; else entries.push(entry); save(); dialog.close(); render(); });
-render();
+const TASK_KEY='exam-planner-tasks-v1', LOG_KEY='exam-planner-log-v1';
+let tasks=JSON.parse(localStorage.getItem(TASK_KEY)||'null')||[
+ {id:crypto.randomUUID(),text:'MAT 3222 · 2025 past paper',done:false},{id:crypto.randomUUID(),text:'COM 3401 · revise subnetting',done:false},{id:crypto.randomUUID(),text:'Create formula sheet',done:true}
+];
+let log=JSON.parse(localStorage.getItem(LOG_KEY)||'{}'); let timerSeconds=0,timerTotal=25*60,timerRunning=false,timerInterval;
+const $=id=>document.getElementById(id); const saveTasks=()=>localStorage.setItem(TASK_KEY,JSON.stringify(tasks)); const saveLog=()=>localStorage.setItem(LOG_KEY,JSON.stringify(log));
+function dateTime(exam){return new Date(`${exam.date}T${exam.time}:00`)}
+function renderSchedule(){ $('scheduleRows').innerHTML=exams.map(e=>{const d=dateTime(e);return `<div class="table-row"><span><div class="date-strong">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'})}</div><div class="date-day">${d.toLocaleDateString([],{weekday:'long'})}</div></span><span><b>${d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}</b></span><span class="code">${e.code}</span><span>${e.title}</span></div>`}).join('')}
+function renderNextExam(){const now=new Date();const next=exams.find(e=>dateTime(e)>now)||exams[0];$('nextExamName').textContent=next.title;$('nextExamMeta').textContent=`${next.code} · ${dateTime(next).toLocaleDateString([],{day:'2-digit',month:'short',year:'numeric'})} · ${dateTime(next).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;return next}
+function updateCountdown(){const next=renderNextExam(),diff=Math.max(0,dateTime(next)-new Date()),days=Math.floor(diff/86400000),hours=Math.floor(diff%86400000/3600000),mins=Math.floor(diff%3600000/60000);$('countdown').innerHTML=`${String(days).padStart(2,'0')}<span>d</span> ${String(hours).padStart(2,'0')}<span>h</span> ${String(mins).padStart(2,'0')}<span>m</span>`}
+function renderTasks(){ $('taskList').innerHTML=tasks.length?tasks.map(t=>`<div class="task ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} data-task="${t.id}" aria-label="Complete task"><label>${escapeHtml(t.text)}</label><button class="delete-task" data-delete="${t.id}" aria-label="Delete task">×</button></div>`).join(''):'<div class="empty-tasks">No tasks yet. Add a paper or revision goal.</div>'; updateStats(); }
+function renderAnalytics(){const days=['M','T','W','T','F','S','S'],values=days.map((_,i)=>log[dayKey(i)]||0),max=Math.max(2,...values);$('chart').innerHTML=values.map((v,i)=>`<div class="bar-wrap"><div class="bar ${v?'active':''}" style="height:${Math.max(4,v/max*100)}%" title="${v.toFixed(1)} hours"></div><span class="bar-label">${days[i]}</span></div>`).join('');const total=values.reduce((a,b)=>a+b,0);$('weeklyHours').textContent=`${total.toFixed(1)} / 20h`;$('hoursStat').textContent=`${total.toFixed(1)}h`}
+function dayKey(offset){const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7)+offset);return d.toISOString().slice(0,10)}
+function updateStats(){const complete=tasks.filter(t=>t.done).length;$('papersStat').textContent=complete;$('tasksStat').textContent=tasks.length?`${Math.round(complete/tasks.length*100)}%`:'0%';let streak=0;for(let i=0;i<7;i++){if(log[dayKey(6-i)])streak++;else if(streak)break}$('streakStat').textContent=`${streak} day${streak===1?'':'s'}`;renderAnalytics()}
+function escapeHtml(v){return v.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function updateTimer(){const h=Math.floor(timerSeconds/3600),m=Math.floor(timerSeconds%3600/60),s=timerSeconds%60;$('timerDisplay').textContent=[h,m,s].map(v=>String(v).padStart(2,'0')).join(':');$('timerProgress').style.width=`${Math.min(100,(timerTotal-timerSeconds)/timerTotal*100)}%`}
+function toggleTimer(){if(timerRunning){clearInterval(timerInterval);timerRunning=false;$('timerToggle').textContent='Resume timer';$('timerStatus').textContent='Paused';return}if(timerSeconds<=0){timerSeconds=timerTotal}timerRunning=true;$('timerToggle').textContent='Pause timer';$('timerStatus').textContent='Focusing';timerInterval=setInterval(()=>{timerSeconds--;updateTimer();if(timerSeconds<=0){clearInterval(timerInterval);timerRunning=false;log[dayKey(6)]=(log[dayKey(6)]||0)+timerTotal/3600;saveLog();renderAnalytics();$('timerToggle').textContent='Start timer';$('timerStatus').textContent='Complete';alert('Focus session complete — great work!')}},1000);updateTimer()}
+$('timerToggle').addEventListener('click',toggleTimer);$('focusButton').addEventListener('click',toggleTimer);$('timerReset').addEventListener('click',()=>{clearInterval(timerInterval);timerRunning=false;timerSeconds=0;timerTotal=Number($('timerPreset').value)*60;$('timerToggle').textContent='Start timer';$('timerStatus').textContent='Ready';updateTimer()});$('timerPreset').addEventListener('change',()=>{$('timerReset').click()});$('taskForm').addEventListener('submit',e=>{e.preventDefault();const input=$('taskInput');if(!input.value.trim())return;tasks.unshift({id:crypto.randomUUID(),text:input.value.trim(),done:false});saveTasks();input.value='';renderTasks()});$('addTask').addEventListener('click',()=>$('taskInput').focus());$('taskList').addEventListener('click',e=>{const id=e.target.dataset.task||e.target.dataset.delete;if(!id)return;const task=tasks.find(t=>t.id===id);if(e.target.dataset.task)task.done=e.target.checked;else tasks=tasks.filter(t=>t.id!==id);saveTasks();renderTasks()});$('sortSchedule').addEventListener('click',()=>{exams.sort((a,b)=>dateTime(a)-dateTime(b));renderSchedule()});
+renderSchedule();renderTasks();renderAnalytics();updateCountdown();setInterval(updateCountdown,30000);updateTimer();

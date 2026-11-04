@@ -1,11 +1,15 @@
-# Timetable
+# Exam Planner
 
-A responsive weekly timetable that runs entirely in the browser. Add, edit, and remove classes; your schedule is saved automatically in local storage.
+A responsive GitHub Pages study dashboard inspired by a clean exam schedule: exam dates, a live countdown to the next paper, hour-based focus timer, weekly study analytics, and a persistent past-paper/task checklist.
 
-## Use locally
+## Features
 
-Open `index.html` in a browser, or serve the folder with any static file server.
+- Exam schedule with date, time, subject code, and title
+- Live countdown to the next exam
+- 25, 50, or 90-minute focus timer
+- Weekly study-hour chart and completion statistics
+- Past-paper and revision task list saved in local storage
 
-## Deploy to GitHub Pages
+## Deploy
 
-This repository includes a GitHub Actions workflow. In **Settings → Pages**, choose **GitHub Actions** as the source. Pushes to `main` will publish the site automatically.
+The included `.github/workflows/pages.yml` publishes the static site through GitHub Pages. In **Settings → Pages**, select **GitHub Actions** as the source, then push to `main`.
